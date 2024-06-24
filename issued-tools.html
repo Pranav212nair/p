@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Issued Tools</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .confirm-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .confirm-button:hover {
+            background-color: #0056b3;
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .date-input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px;
+            width: 100%;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .accept-button, .reject-button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .accept-button {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .accept-button:hover {
+            background-color: #218838;
+        }
+
+        .reject-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .reject-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Issued Tools</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tool Name</th>
+            <th>Quantity</th>
+            <th>Issued By</th>
+            <th>Date</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="issuedToolsTableBody">
+        <!-- Issued items will be populated here dynamically -->
+        </tbody>
+    </table>
+    <button class="confirm-button" onclick="clearIssuedItems()">Clear Issued Items</button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tableBody = document.getElementById('issuedToolsTableBody');
+        let issuedItems = JSON.parse(localStorage.getItem('issuedItems')) || [];
+        const acceptedItems = JSON.parse(localStorage.getItem('acceptedItems')) || [];
+        const rejectedItems = JSON.parse(localStorage.getItem('rejectedItems')) || [];
+
+        // Function to render rows in the table
+        const renderTable = () => {
+            tableBody.innerHTML = ''; // Clear existing table rows
+            issuedItems.forEach((item, index) => {
+                const newRow = document.createElement('tr');
+
+                const idCell = document.createElement('td');
+                idCell.textContent = index + 1; // Display ID as index + 1
+                newRow.appendChild(idCell);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = item.name;
+                newRow.appendChild(nameCell);
+
+                const quantityCell = document.createElement('td');
+                const quantityInput = document.createElement('input');
+                quantityInput.type = 'number';
+                quantityInput.className = 'quantity-input';
+                quantityInput.value = item.quantity;
+                quantityInput.onchange = function() {
+                    item.quantity = quantityInput.value;
+                    updateLocalStorage(issuedItems, acceptedItems, rejectedItems);
+                };
+                quantityCell.appendChild(quantityInput);
+                newRow.appendChild(quantityCell);
+
+                const issuedByCell = document.createElement('td');
+                issuedByCell.textContent = 'Employee 1'; // Placeholder for issued by
+                newRow.appendChild(issuedByCell);
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = item.date;
+                newRow.appendChild(dateCell);
+
+                const dueDateCell = document.createElement('td');
+                const dueDateInput = document.createElement('input');
+                dueDateInput.type = 'date';
+                dueDateInput.value = item.dueDate || '';
+                dueDateInput.className = 'date-input';
+                dueDateInput.onchange = function() {
+                    item.dueDate = dueDateInput.value;
+                    updateLocalStorage(issuedItems, acceptedItems, rejectedItems);
+                };
+                dueDateCell.appendChild(dueDateInput);
+                newRow.appendChild(dueDateCell);
+
+                const actionCell = document.createElement('td');
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'action-buttons';
+
+                const acceptButton = document.createElement('button');
+                acceptButton.textContent = 'Accept';
+                acceptButton.className = 'accept-button';
+                acceptButton.onclick = function() {
+                    acceptedItems.push(item);
+                    issuedItems.splice(index, 1);
+                    updateLocalStorage(issuedItems, acceptedItems, rejectedItems);
+                    renderTable(); // Re-render the table after accepting an item
+                    alert('Tool accepted.');
+                };
+                buttonContainer.appendChild(acceptButton);
+
+                const rejectButton = document.createElement('button');
+                rejectButton.textContent = 'Reject';
+                rejectButton.className = 'reject-button';
+                rejectButton.onclick = function() {
+                    const reason = prompt('Please provide a reason for rejection:');
+                    if (reason) {
+                        item.reason = reason;
+                        rejectedItems.push(item);
+                        issuedItems.splice(index, 1);
+                        updateLocalStorage(issuedItems, acceptedItems, rejectedItems);
+                        renderTable(); // Re-render the table after rejecting an item
+                        alert('Tool rejected. Reason: ' + reason);
+                    }
+                };
+                buttonContainer.appendChild(rejectButton);
+
+                actionCell.appendChild(buttonContainer);
+                newRow.appendChild(actionCell);
+
+                tableBody.appendChild(newRow);
+            });
+        };
+
+        // Initial render of table
+        renderTable();
+
+        
+        function updateLocalStorage(issuedItems, acceptedItems, rejectedItems) {
+            localStorage.setItem('issuedItems', JSON.stringify(issuedItems));
+            localStorage.setItem('acceptedItems', JSON.stringify(acceptedItems));
+            localStorage.setItem('rejectedItems', JSON.stringify(rejectedItems));
+        }
+
+        function clearIssuedItems() {
+            if (confirm('Are you sure you want to clear all issued items?')) {
+                localStorage.removeItem('issuedItems');
+                issuedItems = []; // Reset issued items array
+                renderTable(); // Re-render the table after clearing items
+                alert('Issued items cleared.');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

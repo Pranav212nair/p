@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Management Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .report-button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 30%;
+            box-sizing: border-box;
+        }
+
+        .report-button:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tool Management Report</h2>
+    <div class="button-group">
+        <button class="report-button" onclick="acceptTools()">Accept Tools</button>
+        <button class="report-button" onclick="rejectTools()">Reject Tools</button>
+        <button class="report-button" onclick="returnTools()">Return Tools</button>
+    </div>
+</div>
+
+<div id="acceptToolsContainer" class="container hidden">
+    <h2>Accepted Tools List</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+        </tr>
+        </thead>
+        <tbody id="acceptToolsTableBody">
+        <!-- Items will be populated here dynamically -->
+        </tbody>
+    </table>
+    <button class="report-button" onclick="backToMain()">Back</button>
+</div>
+
+<div id="rejectToolsContainer" class="container hidden">
+    <h2>Rejected Tools List</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Date Issued</th>
+            <th>Reason</th>
+        </tr>
+        </thead>
+        <tbody id="rejectToolsTableBody">
+        <!-- Items will be populated here dynamically -->
+        </tbody>
+    </table>
+    <button class="report-button" onclick="backToMain()">Back</button>
+</div>
+
+<div id="returnToolsContainer" class="container hidden">
+    <h2>Return Tools List</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+        </tr>
+        </thead>
+        <tbody id="returnToolsTableBody">
+        <!-- Items will be populated here dynamically -->
+        </tbody>
+    </table>
+    <button class="report-button" onclick="backToMain()">Back</button>
+</div>
+
+<script>
+    function acceptTools() {
+        document.querySelector('.container').classList.add('hidden');
+        const acceptToolsContainer = document.getElementById('acceptToolsContainer');
+        acceptToolsContainer.classList.remove('hidden');
+
+        const tableBody = document.getElementById('acceptToolsTableBody');
+        const acceptedItems = JSON.parse(localStorage.getItem('acceptedItems')) || [];
+
+        // Clear previous entries
+        tableBody.innerHTML = '';
+
+        acceptedItems.forEach((item, index) => {
+            const newRow = document.createElement('tr');
+
+            const employeeNameCell = document.createElement('td');
+            employeeNameCell.textContent = 'Employee-' + (index + 1);
+            newRow.appendChild(employeeNameCell);
+
+            const itemNameCell = document.createElement('td');
+            itemNameCell.textContent = item.name;
+            newRow.appendChild(itemNameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            newRow.appendChild(quantityCell);
+
+            const dateIssuedCell = document.createElement('td');
+            dateIssuedCell.textContent = item.date;
+            newRow.appendChild(dateIssuedCell);
+
+            const dueDateCell = document.createElement('td');
+            const dueDate = item.dueDate ? new Date(item.dueDate) : new Date(new Date(item.date).setDate(new Date(item.date).getDate() + 7));
+            dueDateCell.textContent = dueDate.toISOString().split('T')[0];
+            newRow.appendChild(dueDateCell);
+
+            tableBody.appendChild(newRow);
+        });
+    }
+
+    function rejectTools() {
+        document.querySelector('.container').classList.add('hidden');
+        const rejectToolsContainer = document.getElementById('rejectToolsContainer');
+        rejectToolsContainer.classList.remove('hidden');
+
+        const tableBody = document.getElementById('rejectToolsTableBody');
+        const rejectedItems = JSON.parse(localStorage.getItem('rejectedItems')) || [];
+
+        // Clear previous entries
+        tableBody.innerHTML = '';
+
+        rejectedItems.forEach((item, index) => {
+            const newRow = document.createElement('tr');
+
+            const employeeNameCell = document.createElement('td');
+            employeeNameCell.textContent = 'Employee-' + (index + 1);
+            newRow.appendChild(employeeNameCell);
+
+            const itemNameCell = document.createElement('td');
+            itemNameCell.textContent = item.name;
+            newRow.appendChild(itemNameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            newRow.appendChild(quantityCell);
+
+            const dateIssuedCell = document.createElement('td');
+            dateIssuedCell.textContent = item.date;
+            newRow.appendChild(dateIssuedCell);
+
+            const reasonCell = document.createElement('td');
+            reasonCell.textContent = item.reason;
+            newRow.appendChild(reasonCell);
+
+            tableBody.appendChild(newRow);
+        });
+    }
+
+    function returnTools() {
+        document.querySelector('.container').classList.add('hidden');
+        const returnToolsContainer = document.getElementById('returnToolsContainer');
+        returnToolsContainer.classList.remove('hidden');
+
+        const tableBody = document.getElementById('returnToolsTableBody');
+        const acceptedItems = JSON.parse(localStorage.getItem('acceptedItems')) || [];
+
+        // Clear previous entries
+        tableBody.innerHTML = '';
+
+        acceptedItems.forEach((item, index) => {
+            const newRow = document.createElement('tr');
+
+            const employeeNameCell = document.createElement('td');
+            employeeNameCell.textContent = 'Employee-' + (index + 1);
+            newRow.appendChild(employeeNameCell);
+
+            const itemNameCell = document.createElement('td');
+            itemNameCell.textContent = item.name;
+            newRow.appendChild(itemNameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            newRow.appendChild(quantityCell);
+
+            const dateIssuedCell = document.createElement('td');
+            dateIssuedCell.textContent = item.date;
+            newRow.appendChild(dateIssuedCell);
+
+            const dueDateCell = document.createElement('td');
+            const dueDate = item.dueDate ? new Date(item.dueDate) : new Date(new Date(item.date).setDate(new Date(item.date).getDate() + 7));
+            dueDateCell.textContent = dueDate.toISOString().split('T')[0];
+            newRow.appendChild(dueDateCell);
+
+            tableBody.appendChild(newRow);
+        });
+    }
+
+    function backToMain() {
+        document.getElementById('acceptToolsContainer').classList.add('hidden');
+        document.getElementById('rejectToolsContainer').classList.add('hidden');
+        document.getElementById('returnToolsContainer').classList.add('hidden');
+        document.querySelector('.container').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

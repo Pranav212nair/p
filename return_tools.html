@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Return Tools List</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba, (0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-button {
+            padding: 8px 12px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tick-button {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .tick-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Return Tools List</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Date Issued</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="returnToolsTableBody">
+        <!-- Items will be populated here dynamically -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tableBody = document.getElementById('returnToolsTableBody');
+        const acceptedItems = JSON.parse(localStorage.getItem('acceptedItems')) || [];
+
+        acceptedItems.forEach((item, index) => {
+            const newRow = document.createElement('tr');
+
+            const employeeNameCell = document.createElement('td');
+            employeeNameCell.textContent = 'Employee-' + (index + 1);
+            newRow.appendChild(employeeNameCell);
+
+            const itemNameCell = document.createElement('td');
+            itemNameCell.textContent = item.name;
+            newRow.appendChild(itemNameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            newRow.appendChild(quantityCell);
+
+            const dateIssuedCell = document.createElement('td');
+            dateIssuedCell.textContent = item.date;
+            newRow.appendChild(dateIssuedCell);
+
+            const dueDateCell = document.createElement('td');
+            const dueDate = item.dueDate ? new Date(item.dueDate) : new Date(new Date(item.date).setDate(new Date(item.date).getDate() + 7));
+            dueDateCell.textContent = dueDate.toISOString().split('T')[0];
+            newRow.appendChild(dueDateCell);
+
+            const actionCell = document.createElement('td');
+
+            const tickButton = document.createElement('button');
+            tickButton.textContent = '✔';
+            tickButton.className = 'action-button tick-button';
+            tickButton.onclick = function() {
+                newRow.remove();
+                acceptedItems.splice(index, 1);
+                updateLocalStorage(acceptedItems);
+                alert('Item marked as returned.');
+            };
+            actionCell.appendChild(tickButton);
+
+            newRow.appendChild(actionCell);
+            tableBody.appendChild(newRow);
+        });
+    });
+
+    function updateLocalStorage(acceptedItems) {
+        localStorage.setItem('acceptedItems', JSON.stringify(acceptedItems));
+    }
+</script>
+
+</body>
+</html>

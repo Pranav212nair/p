@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Tool Request Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .request-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #ff4b4b;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .request-button:hover {
+            background-color: #cc0000;
+        }
+
+        .generate-receipt-button, .order-history-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff4b4b;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .generate-receipt-button:hover, .order-history-button:hover {
+            background-color: #cc0000;
+        }
+
+        #orderHistoryModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #orderHistoryModal .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        #orderHistoryModal .close-button {
+            float: right;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #orderHistoryModal table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #orderHistoryModal th, #orderHistoryModal td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #orderHistoryModal th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #orderHistoryModal tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Employee Tool Request Form</h2>
+    <form id="requestForm">
+        <input type="text" id="toolName" placeholder="Tool Name" required>
+        <input type="number" id="toolQuantity" placeholder="Tool Quantity" required>
+        <button type="submit">Request Tool</button>
+    </form>
+    <table>
+        <thead>
+        <tr>
+            <th>Tool Name</th>
+            <th>Tool Quantity</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="requestTableBody">
+        </tbody>
+    </table>
+    <button class="generate-receipt-button" onclick="generateReceipt()">Generate Receipt</button>
+    <button class="order-history-button" onclick="viewOrderHistory()">Order History</button>
+</div>
+
+
+<div id="orderHistoryModal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeOrderHistory()">&times;</span>
+        <h2>Order History</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tool Name</th>
+                <th>Quantity</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Reason</th>
+            </tr>
+            </thead>
+            <tbody id="orderHistoryTableBody">
+            <!-- Order history items will be populated here dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.getElementById('requestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const toolName = document.getElementById('toolName').value;
+        const toolQuantity = document.getElementById('toolQuantity').value;
+
+        if (toolName && toolQuantity) {
+            const tableBody = document.getElementById('requestTableBody');
+            const newRow = document.createElement('tr');
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = toolName;
+            newRow.appendChild(nameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = toolQuantity;
+            newRow.appendChild(quantityCell);
+
+            const actionCell = document.createElement('td');
+            const requestButton = document.createElement('button');
+            requestButton.textContent = 'Remove';
+            requestButton.className = 'request-button';
+            requestButton.onclick = function() {
+                tableBody.removeChild(newRow);
+                updateLocalStorage();
+            };
+            actionCell.appendChild(requestButton);
+            newRow.appendChild(actionCell);
+
+            tableBody.appendChild(newRow);
+
+            // Clear form fields
+            document.getElementById('toolName').value = '';
+            document.getElementById('toolQuantity').value = '';
+
+            // Update local storage
+            updateLocalStorage();
+        }
+    });
+
+    function generateReceipt() {
+        updateLocalStorage();
+        alert('Receipt generated.');
+    }
+
+    function updateLocalStorage() {
+        const tableBody = document.getElementById('requestTableBody');
+        const rows = tableBody.getElementsByTagName('tr');
+        let requests = [];
+        for (let row of rows) {
+            const cells = row.getElementsByTagName('td');
+            const toolName = cells[0].textContent;
+            const toolQuantity = cells[1].textContent;
+            requests.push({ toolName, toolQuantity });
+        }
+        localStorage.setItem('toolRequests', JSON.stringify(requests));
+    }
+
+    function viewOrderHistory() {
+        const acceptedItems = JSON.parse(localStorage.getItem('acceptedItems')) || [];
+        const rejectedItems = JSON.parse(localStorage.getItem('rejectedItems')) || [];
+
+        const historyTableBody = document.getElementById('orderHistoryTableBody');
+        historyTableBody.innerHTML = '';
+
+        const allItems = [...acceptedItems, ...rejectedItems];
+        allItems.forEach((item, index) => {
+            const newRow = document.createElement('tr');
+
+            const idCell = document.createElement('td');
+            idCell.textContent = index + 1;
+            newRow.appendChild(idCell);
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = item.name;
+            newRow.appendChild(nameCell);
+
+            const quantityCell = document.createElement('td');
+            quantityCell.textContent = item.quantity;
+            newRow.appendChild(quantityCell);
+
+            const dateCell = document.createElement('td');
+            const requestDate = item.date || new Date().toLocaleDateString();
+            dateCell.textContent = requestDate;
+            newRow.appendChild(dateCell);
+
+            const statusCell = document.createElement('td');
+            if (acceptedItems.includes(item)) {
+                statusCell.textContent = 'Accepted';
+            } else if (rejectedItems.includes(item)) {
+                statusCell.textContent = 'Rejected';
+            } else {
+                statusCell.textContent = 'Pending';
+            }
+            newRow.appendChild(statusCell);
+
+            const reasonCell = document.createElement('td');
+            reasonCell.textContent = item.reason || 'N/A';
+            newRow.appendChild(reasonCell);
+
+            historyTableBody.appendChild(newRow);
+        });
+
+        document.getElementById('orderHistoryModal').style.display = 'flex';
+    }
+
+    function closeOrderHistory() {
+        document.getElementById('orderHistoryModal').style.display = 'none';
+    }
+</script>
+
+
+</body>
+</html>
